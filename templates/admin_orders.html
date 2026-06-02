@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O'FAME LEGACY - Admin Orders</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>O'FAME LEGACY — Admin Orders</h1>
+      <nav>
+        <a href="/admin/menu">Menu</a>
+        <a href="/admin/users">Users</a>
+        <a href="/admin/logout">Sign Out</a>
+      </nav>
+    </header>
+
+    <section class="order-history">
+      <form method="GET" action="/admin/orders" class="admin-search-form">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search orders by customer or item" />
+        <label for="sort">Sort</label>
+        <select id="sort" name="sort">
+          <option value="date_desc" {% if sort == 'date_desc' %}selected{% endif %}>Newest first</option>
+          <option value="date_asc" {% if sort == 'date_asc' %}selected{% endif %}>Oldest first</option>
+          <option value="total_desc" {% if sort == 'total_desc' %}selected{% endif %}>Total high → low</option>
+          <option value="total_asc" {% if sort == 'total_asc' %}selected{% endif %}>Total low → high</option>
+        </select>
+        <label for="date_from">From</label>
+        <input type="date" id="date_from" name="date_from" value="{{ date_from }}" />
+        <label for="date_to">To</label>
+        <input type="date" id="date_to" name="date_to" value="{{ date_to }}" />
+        <button type="submit">Filter</button>
+      </form>
+      {% if orders %}
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Customer</th>
+              <th>Payment</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+              <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.items }}</td>
+                <td>₦{{ '%.2f' | format(order.total) }}</td>
+                <td>{{ order.customer_name }}<br>{{ order.customer_email }}</td>
+                <td>{{ order.payment_method }}</td>
+                <td>{{ order.created_at }}</td>
+                <td>
+                  <form action="/admin/orders/delete/{{ order.id }}" method="POST" style="display:inline">
+                    <button type="submit" class="ghost">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No orders placed yet.</p>
+      {% endif %}
+    </section>
+  </div>
+</body>
+</html>

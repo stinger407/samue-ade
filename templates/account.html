@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O'FAME LEGACY - My Account</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>O'FAME LEGACY — My Account</h1>
+      <nav>
+        <a href="/">Menu</a>
+        <a href="/cart">Cart ({{ cart_count }})</a>
+        <a href="/order-history">Order History</a>
+        <a href="/logout">Sign Out</a>
+      </nav>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {% for message in messages %}
+            {% set ml = message|lower %}
+            {% if 'signed in' not in ml and 'signed out' not in ml and 'updated' not in ml and not (session.get('user') and session.get('user').name in message) %}
+              <p>{{ message }}</p>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="checkout">
+      <h2>Welcome, {{ user.name }}</h2>
+      <p>Email: {{ user.email }}</p>
+      <p>Favorite category: {{ user.favorite_category or 'Not set' }}</p>
+      <div class="account-actions">
+        <a class="hero-button" href="/order-history">View Order History</a>
+        <a class="hero-button ghost" href="/cart">View Cart</a>
+      </div>
+    </section>
+
+    <section class="order-history">
+      <h2>Recent Orders</h2>
+      {% if orders %}
+        <table>
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Total</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders[:5] %}
+              <tr>
+                <td>{{ order.items }}</td>
+                <td>₦{{ '%.2f' | format(order.total) }}</td>
+                <td>{{ order.created_at }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No orders found yet. Start shopping to place your first order.</p>
+      {% endif %}
+    </section>
+  </div>
+</body>
+</html>

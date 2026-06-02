@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O'FAME LEGACY - Admin Users</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>O'FAME LEGACY — Admin Users</h1>
+      <nav>
+        <a href="/admin/menu">Menu</a>
+        <a href="/admin/orders">Orders</a>
+        <a href="/admin/logout">Sign Out</a>
+      </nav>
+    </header>
+
+    <section class="order-history">
+      <form method="GET" action="/admin/users" class="admin-search-form">
+        <input type="text" name="q" value="{{ q }}" placeholder="Search users by name or email" />
+        <button type="submit">Search</button>
+      </form>
+      {% if users %}
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <a href="/admin/users/edit/{{ user.id }}">Edit</a>
+                  <form action="/admin/users/delete/{{ user.id }}" method="POST" style="display:inline">
+                    <button type="submit" class="ghost">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No users found yet.</p>
+      {% endif %}
+    </section>
+  </div>
+</body>
+</html>

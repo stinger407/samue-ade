@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O'FAME Farm Feed & Foodstuffs</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="header-brand">
+        <img class="site-logo" src="/images/UQGQ6407.JPG" alt="O'FAME Farm Feed logo" />
+        <div>
+          <h1>O'FAME Farm Feed & Foodstuffs</h1>
+          <p class="site-tagline">Farm feed, foodstuffs, and livestock in one trusted marketplace.</p>
+        </div>
+      </div>
+      <nav>
+        <a href="/cart">Cart ({{ cart_count }})</a>
+        <a href="/order-history">Orders</a>
+        {% if session.get('user') %}
+          <a href="/logout">Sign Out</a>
+        {% else %}
+          <a href="/login">Sign In</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-copy">
+          <span class="hero-tag">Farm Feed & Foodstuffs Marketplace</span>
+          <h2>Farm feed, foodstuffs, and livestock for every homestead</h2>
+          <p>Discover fresh livestock, premium feed, pantry foodstuffs, and farmhouse staples crafted for every farm and family.</p>
+          <div class="hero-actions">
+            {% if session.get('user') %}
+              <a class="hero-button" href="/account">My Account</a>
+            {% else %}
+              <a class="hero-button" href="/login">Sign In</a>
+            {% endif %}
+            <a class="hero-button ghost" href="/cart">View Cart ({{ cart_count }})</a>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <img src="/images/company_cows.jpg" alt="Farm livestock scene" class="hero-image" />
+          <div class="hero-cards">
+            <article class="hero-card">
+              <h3>Farm-Fresh Feed</h3>
+              <p>Premium grains and supplements for healthier animals and stronger yields.</p>
+            </article>
+            <article class="hero-card">
+              <h3>Foodstuffs & Pantry</h3>
+              <p>Essential food items stocked for every kitchen, from rice and beans to oil and staples.</p>
+            </article>
+            <article class="hero-card">
+              <h3>Trusted Livestock</h3>
+              <p>Quality breeds sourced directly from responsible farms and trusted suppliers.</p>
+            </article>
+            <article class="hero-card">
+              <h3>Easy Ordering</h3>
+              <p>Quick checkout, transparent pricing, and delivery ready for rural and urban farms.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="category-showcase">
+      <div class="showcase-header">
+        <h2>Explore Our Top Categories</h2>
+        <p>Choose from farm feed, foodstuffs, livestock, and household essentials with just one click.</p>
+      </div>
+      <div class="showcase-grid">
+        <a class="showcase-card" href="/?category=Pantry">
+          <img src="/images/rice_bag.jpg" alt="Foodstuffs" />
+          <div>
+            <span class="badge">🌾 Popular</span>
+            <h3>Foodstuffs & Pantry</h3>
+            <p>Rice, grains, cooking oil, and everyday kitchen staples all in one place.</p>
+          </div>
+        </a>
+        <a class="showcase-card" href="/?category=Meat">
+          <img src="/images/food_box.jpg" alt="Farm feed" />
+          <div>
+            <span class="badge">⭐ Best Seller</span>
+            <h3>Farm Feed</h3>
+            <p>Healthy feed blends and supplements for livestock growth and farm nutrition.</p>
+          </div>
+        </a>
+        <a class="showcase-card" href="/">
+          <img src="/images/goat.jpg" alt="Livestock" />
+          <div>
+            <span class="badge">📦 All Items</span>
+            <h3>All Products</h3>
+            <p>Browse the full selection of feed, foodstuffs, and livestock in one place.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {% for message in messages %}
+            {% set ml = message|lower %}
+            {% if 'signed in' not in ml and 'signed out' not in ml and 'updated' not in ml and not (session.get('user') and session.get('user').name in message) %}
+              <p>{{ message }}</p>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="menu">
+      <div class="menu-header">
+        <div>
+          <h2>Fresh Farm Feed and Farmhouse Staples</h2>
+          <p>Shop farm-fresh livestock, grains, and pantry essentials with a warm farmstead feel.</p>
+        </div>
+        <div class="hero-actions">
+          {% if session.get('user') %}
+            <a class="hero-button" href="/account">My Account</a>
+          {% else %}
+            <a class="hero-button" href="/login">Sign In</a>
+          {% endif %}
+          <a class="hero-button ghost" href="/cart">Cart ({{ cart_count }})</a>
+        </div>
+      </div>
+
+      <div class="category-filter">
+        <form method="GET" action="/">
+          <label for="category">Filter by type:</label>
+          <select id="category" name="category">
+            <option value="" {% if not selected_category %}selected{% endif %}>All types</option>
+            {% for category in categories %}
+              <option value="{{ category }}" {% if selected_category == category %}selected{% endif %}>{{ category }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit">Filter</button>
+        </form>
+      </div>
+
+      <div class="menu-grid">
+        {% for item in items %}
+          <article class="menu-card">
+            <a href="/item/{{ item.id }}"><img src="{{ item.image_url }}" alt="{{ item.name }}" class="menu-card-image" /></a>
+            <div class="menu-card-body">
+              <span class="category-chip">{{ item.category or 'Uncategorized' }}</span>
+              <h3><a href="/item/{{ item.id }}" style="color:inherit;text-decoration:none;">{{ item.name }}</a></h3>
+              <p>{{ item.description }}</p>
+              <div class="menu-card-footer">
+                <strong>₦{{ '%.2f' | format(item.price) }}</strong>
+                <form method="POST" action="/add">
+                  <input type="hidden" name="item_id" value="{{ item.id }}" />
+                  <button type="submit">Add</button>
+                </form>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div class="footer-block">
+          <h3>About Us</h3>
+          <p>O'FAME Farm Feed & Foodstuffs brings quality livestock, farm feed, foodstuffs, and pantry essentials to farms and homesteads with care and transparency.</p>
+        </div>
+        <div class="footer-block">
+          <h3>Social Media</h3>
+          <ul class="footer-list footer-list-inline">
+            <li><a href="#">📘 Facebook: @OfameFarmFeed</a></li>
+            <li><a href="#">📸 Instagram: @OfameFarmFeed</a></li>
+            <li><a href="#">🐦 Twitter: @OfameFarmFeed</a></li>
+          </ul>
+        </div>
+        <div class="footer-block">
+          <h3>WhatsApp</h3>
+          <ul class="footer-list footer-list-inline">
+            <li><a href="https://wa.me/2348012345678" target="_blank">💬 +234 801 234 5678</a></li>
+            <li><a href="https://wa.me/2348098765432" target="_blank">💬 +234 809 876 5432</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="footer-note">Message us on WhatsApp for fast support or order questions. Trusted farm supplies for your everyday needs.</p>
+    </footer>
+  </div>
+</body>
+</html>

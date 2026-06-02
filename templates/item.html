@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ item.name }} — O'FAME Farmstead</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>O'FAME legacy</h1>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/cart">Cart ({{ cart_count }})</a>
+      </nav>
+    </header>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {% for message in messages %}
+            {% set ml = message|lower %}
+            {% if 'signed in' not in ml and 'signed out' not in ml and 'updated' not in ml and not (session.get('user') and session.get('user').name in message) %}
+              <p>{{ message }}</p>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="menu">
+      <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
+        <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width:420px;max-width:100%;border-radius:16px;object-fit:cover;" />
+        <div style="flex:1;min-width:260px;">
+          <span class="category-chip">{{ item.category }}</span>
+          <h2 style="margin-top:8px;">{{ item.name }}</h2>
+          <p style="color:#475569;">{{ item.description }}</p>
+          <p class="note">Price: <strong>₦{{ '%.2f' | format(item.price) }}</strong></p>
+
+          <form method="POST" action="/add" style="margin-top:18px;">
+            <input type="hidden" name="item_id" value="{{ item.id }}" />
+            <button type="submit">Add to Cart</button>
+          </form>
+
+          <p class="note" style="margin-top:16px;">Contact us for transport and pickup options.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

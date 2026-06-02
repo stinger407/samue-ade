@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O'FAME LEGACY - Admin Menu</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>O'FAME LEGACY — Admin Menu</h1>
+      <nav>
+        <a href="/">Menu</a>
+        <a href="/admin/logout">Sign Out</a>
+      </nav>
+    </header>
+
+    <section class="order-history">
+      <p>
+        <a href="/admin/menu/add" class="button">Add new item</a>
+        <span class="separator">|</span>
+        <a href="/admin/users" class="button ghost">Manage users</a>
+        <span class="separator">|</span>
+        <a href="/admin/orders" class="button ghost">Manage orders</a>
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td>{{ item.id }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.category or 'Uncategorized' }}</td>
+              <td>₦{{ '%.2f' | format(item.price) }}</td>
+              <td>{{ item.description }}</td>
+              <td>
+                <a href="/admin/menu/edit/{{ item.id }}" class="button ghost">Edit</a>
+                <form action="/admin/menu/delete/{{ item.id }}" method="POST" style="display:inline">
+                  <button type="submit" class="ghost">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</body>
+</html>

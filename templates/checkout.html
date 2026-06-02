@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O'FAME LEGACY - Checkout</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>O'FAME LEGACY — Checkout</h1>
+      <nav>
+        <a href="/cart">Back to Cart</a>
+        <a href="/order-history">Orders</a>
+        {% if session.get('user') %}
+          <a href="/logout">Sign Out</a>
+        {% else %}
+          <a href="/login">Sign In</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <section class="checkout">
+      <h2>Order Summary</h2>
+      <ul>
+        {% for item in cart_items %}
+          <li>{{ item.quantity }} × {{ item.name }} — ₦{{ '%.2f' | format(item.subtotal) }}</li>
+        {% endfor %}
+      </ul>
+      <p class="total">Total: ₦{{ '%.2f' | format(total) }}</p>
+
+      <form method="POST" action="/place-order">
+          <div class="form-group">
+          <label for="name">Name</label>
+          <input id="name" type="text" name="name" required placeholder="Your name" value="{{ session.get('user').name if session.get('user') else '' }}" />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" name="email" required placeholder="you@example.com" value="{{ session.get('user').email if session.get('user') else '' }}" />
+        </div>
+
+        <div class="form-group">
+          <label for="payment_method">Payment Method</label>
+          <select id="payment_method" name="payment_method">
+            <option>Credit / Debit Card</option>
+            <option>Cash on Delivery</option>
+            <option>Mobile Payment</option>
+          </select>
+        </div>
+
+        <button type="submit">Place Order</button>
+      </form>
+    </section>
+  </div>
+</body>
+</html>
