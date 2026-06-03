@@ -103,6 +103,23 @@ body::before {
   padding: 22px;
 }
 
+/* Make hero cards horizontal on wider screens */
+@media (min-width: 900px) {
+  .hero-cards {
+    display: flex;
+    gap: 18px;
+    align-items: stretch;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+
+  .hero-card {
+    min-width: 260px;
+    flex: 0 0 260px;
+  }
+}
+
 .hero-card h3 {
   margin: 0 0 10px;
   color: #235028;
