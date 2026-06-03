@@ -740,6 +740,12 @@ th, td {
 .total {
   font-weight: bold;
   margin-top: 16px;
+  font-size: 1.25rem;
+  padding: 16px;
+  background: linear-gradient(135deg, #f5a642, #d68910);
+  color: white;
+  border-radius: 8px;
+  text-align: right;
 }
 
 ul {
@@ -765,6 +771,84 @@ li {
   border-radius: 6px;
 }
 
+/* Cart responsive styles */
+.cart-list {
+  overflow-x: auto;
+}
+
+.cart-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+@media (max-width: 768px) {
+  .cart-list table thead {
+    display: none;
+  }
+  
+  .cart-list table tbody tr {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #fafafa;
+  }
+  
+  .cart-list table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .cart-list table tbody td:last-child {
+    border-bottom: none;
+  }
+  
+  .cart-list table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    min-width: 100px;
+  }
+  
+  .cart-image-cell {
+    width: 100%;
+    padding: 0;
+    margin-bottom: 8px;
+  }
+  
+  .cart-image-cell img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    border-radius: 8px;
+  }
+  
+  .inline-form {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .inline-form input,
+  .inline-form button {
+    width: 100%;
+  }
+  
+  .quantity-input {
+    width: 100%;
+  }
+  
+  .total {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 1.5rem;
+  }
+}
+
 input[type="text"], input[type="email"], select {
   width: 100%;
   max-width: 320px;
@@ -777,6 +861,13 @@ input[type="text"], input[type="email"], select {
 .form-group {
   margin-bottom: 16px;
 }
+
+@media (max-width: 768px) {
+  input[type="text"], input[type="email"], select {
+    max-width: 100%;
+  }
+}
+
 
 .account-actions {
   display: flex;

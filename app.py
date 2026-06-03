@@ -4,7 +4,7 @@ import os
 import datetime
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret"  # replace with a strong secret in production
+app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret")  # set SECRET_KEY in production
 DATABASE = os.path.join(os.path.dirname(__file__), "food.db")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "adminpass")
 

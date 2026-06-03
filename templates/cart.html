@@ -29,18 +29,18 @@
               <th></th>
               <th>Item</th>
               <th>Qty</th>
-              <th>Subtotal</th>
+              <th>Price</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {% for item in cart_items %}
               <tr>
-                <td class="cart-image-cell">
+                <td class="cart-image-cell" data-label="Image">
                   <img src="{{ item.image_url }}" alt="{{ item.name }}" class="cart-thumbnail" />
                 </td>
-                <td>{{ item.name }}</td>
-                <td>
+                <td data-label="Item">{{ item.name }}</td>
+                <td data-label="Quantity">
                   <form action="/update-cart" method="POST" class="inline-form">
                     <input type="hidden" name="item_id" value="{{ item.id }}" />
                     <input type="number" name="quantity" value="{{ item.quantity }}" min="0" class="quantity-input" />
@@ -48,7 +48,7 @@
                     <button type="submit" name="action" value="remove" class="ghost">Remove</button>
                   </form>
                 </td>
-                <td>₦{{ '%.2f' | format(item.subtotal) }}</td>
+                <td data-label="Subtotal">₦{{ '%.2f' | format(item.subtotal) }}</td>
                 <td></td>
               </tr>
             {% endfor %}
