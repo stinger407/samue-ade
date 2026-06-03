@@ -4,16 +4,33 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ item.name }} — O'FAME Farmstead</title>
+  <meta property="og:title" content="{{ item.name }} — O'FAME Farm Feed & Foodstuffs" />
+  <meta property="og:description" content="{{ item.description[:140] }}" />
+  <meta property="og:image" content="{{ item.image_url }}" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papH6f0hKxY2Yb9H9Vf0sVn1KQZk1+Y1q8+F6Z1Yx1q0eVQ1Y5h2g2Q2V3s1k3K5" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
   <div class="page">
-    <header>
-      <h1>O'FAME legacy</h1>
+    <header class="site-header">
+      <div class="header-brand">
+        <a href="/">
+          <img class="site-logo" src="/images/UQGQ6407.JPG" alt="O'FAME Farm Feed logo" />
+        </a>
+        <div>
+          <h1>O'FAME Farm Feed & Foodstuffs</h1>
+          <p class="site-tagline">Farm feed, foodstuffs, and livestock in one trusted marketplace.</p>
+        </div>
+      </div>
       <nav>
         <a href="/">Home</a>
-        <a href="/cart">Cart ({{ cart_count }})</a>
+        <a href="/cart">Cart ({{ cart_count|default(0) }})</a>
+        {% if session.get('user') %}
+          <a href="/logout">Sign Out</a>
+        {% else %}
+          <a href="/login">Sign In</a>
+        {% endif %}
       </nav>
     </header>
 
@@ -30,7 +47,7 @@
       {% endif %}
     {% endwith %}
 
-    <section class="menu">
+    <section class="menu reveal-on-scroll">
       <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
         <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width:420px;max-width:100%;border-radius:16px;object-fit:cover;" />
         <div style="flex:1;min-width:260px;">
@@ -49,5 +66,6 @@
       </div>
     </section>
   </div>
+  <script src="/static/scroll.js"></script>
 </body>
 </html>

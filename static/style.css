@@ -904,8 +904,28 @@ input[type="text"], input[type="email"], select {
   opacity: 0.98;
 }
 
-/* Small helper to use FA icons in buttons */
-.hero-button i,
-button i {
-  margin-right: 8px;
-}
+  /* Reveal-on-scroll animations */
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 650ms ease, transform 650ms cubic-bezier(0.2,0.8,0.2,1);
+    will-change: opacity, transform;
+  }
+
+  .reveal-on-scroll.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-on-scroll[data-dir="left"] {
+    transform: translateX(-24px);
+  }
+
+  .reveal-on-scroll[data-dir="right"] {
+    transform: translateX(24px);
+  }
+
+  .reveal-on-scroll.in-view[data-dir] {
+    transform: translateX(0);
+  }
+

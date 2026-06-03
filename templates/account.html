@@ -4,15 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>O'FAME LEGACY - My Account</title>
+  <meta property="og:title" content="My Account — O'FAME Farm Feed & Foodstuffs" />
+  <meta property="og:description" content="Manage your account and view recent orders." />
+  <meta property="og:image" content="/images/UQGQ6407.JPG" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <div class="page">
-    <header>
-      <h1>O'FAME LEGACY — My Account</h1>
+    <header class="site-header">
+      <div class="header-brand">
+        <a href="/">
+          <img class="site-logo" src="/images/UQGQ6407.JPG" alt="O'FAME Farm Feed logo" />
+        </a>
+        <div>
+          <h1>O'FAME Farm Feed & Foodstuffs</h1>
+          <p class="site-tagline">Farm feed, foodstuffs, and livestock in one trusted marketplace.</p>
+        </div>
+      </div>
       <nav>
         <a href="/">Menu</a>
-        <a href="/cart">Cart ({{ cart_count }})</a>
+        <a href="/cart">Cart ({{ cart_count|default(0) }})</a>
         <a href="/order-history">Order History</a>
         <a href="/logout">Sign Out</a>
       </nav>
@@ -31,7 +43,7 @@
       {% endif %}
     {% endwith %}
 
-    <section class="checkout">
+    <section class="checkout reveal-on-scroll">
       <h2>Welcome, {{ user.name }}</h2>
       <p>Email: {{ user.email }}</p>
       <p>Favorite category: {{ user.favorite_category or 'Not set' }}</p>
@@ -41,7 +53,7 @@
       </div>
     </section>
 
-    <section class="order-history">
+    <section class="order-history reveal-on-scroll">
       <h2>Recent Orders</h2>
       {% if orders %}
         <table>
@@ -67,5 +79,6 @@
       {% endif %}
     </section>
   </div>
+  <script src="/static/scroll.js"></script>
 </body>
 </html>

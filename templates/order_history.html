@@ -4,15 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>O'FAME LEGACY - Order History</title>
+  <meta property="og:title" content="Order History — O'FAME Farm Feed & Foodstuffs" />
+  <meta property="og:description" content="View your past orders and order details." />
+  <meta property="og:image" content="/images/UQGQ6407.JPG" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <div class="page">
-    <header>
-      <h1>O'FAME LEGACY — Order History</h1>
+    <header class="site-header">
+      <div class="header-brand">
+        <a href="/">
+          <img class="site-logo" src="/images/UQGQ6407.JPG" alt="O'FAME Farm Feed logo" />
+        </a>
+        <div>
+          <h1>O'FAME Farm Feed & Foodstuffs</h1>
+          <p class="site-tagline">Farm feed, foodstuffs, and livestock in one trusted marketplace.</p>
+        </div>
+      </div>
       <nav>
         <a href="/">Menu</a>
-        <a href="/cart">Cart</a>
+        <a href="/cart">Cart ({{ cart_count|default(0) }})</a>
         {% if session.get('user') %}
           <a href="/logout">Sign Out</a>
         {% else %}
@@ -21,7 +33,7 @@
       </nav>
     </header>
 
-    <section class="order-history">
+    <section class="order-history reveal-on-scroll">
       <form method="GET" action="/order-history" class="admin-search-form">
         <input type="text" name="q" value="{{ q }}" placeholder="Search your orders" />
         <label for="sort">Sort</label>
@@ -65,5 +77,6 @@
       {% endif %}
     </section>
   </div>
+  <script src="/static/scroll.js"></script>
 </body>
 </html>

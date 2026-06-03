@@ -4,18 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>O'FAME LEGACY - Sign In</title>
+  <meta property="og:title" content="Sign in — O'FAME Farm Feed & Foodstuffs" />
+  <meta property="og:description" content="Sign in to manage your orders and account." />
+  <meta property="og:image" content="/images/UQGQ6407.JPG" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <div class="page">
-    <header>
-      <h1>O'FAME LEGACY — Sign In</h1>
+    <header class="site-header">
+      <div class="header-brand">
+        <a href="/">
+          <img class="site-logo" src="/images/UQGQ6407.JPG" alt="O'FAME Farm Feed logo" />
+        </a>
+        <div>
+          <h1>O'FAME Farm Feed & Foodstuffs</h1>
+          <p class="site-tagline">Farm feed, foodstuffs, and livestock in one trusted marketplace.</p>
+        </div>
+      </div>
       <nav>
-        <a href="./">Menu</a>
+        <a href="/">Menu</a>
+        <a href="/cart">Cart ({{ cart_count|default(0) }})</a>
       </nav>
     </header>
 
-    <section class="checkout">
+    <section class="checkout reveal-on-scroll">
       <form method="POST" action="/login">
         <div class="form-group">
           <label for="name">First Name</label>
@@ -33,5 +46,6 @@
       </form>
     </section>
   </div>
+  <script src="/static/scroll.js"></script>
 </body>
 </html>
