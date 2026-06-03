@@ -12,7 +12,8 @@ cd "c:\Users\user\Desktop\samue ade"
 This will:
 - initialize Git if needed
 - add all files
-- create a commit with message `oca commit`
+- create a commit with message `oca commigit remote remove origin
+git remote add origin "https://github.com/stinger407/samue-ade.git"xt`
 
 If the script fails because of PowerShell policy, run:
 
