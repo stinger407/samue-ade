@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>O'FAME Farm Feed & Foodstuffs</title>
   <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papH6f0hKxY2Yb9H9Vf0sVn1KQZk1+Y1q8+F6Z1Yx1q0eVQ1Y5h2g2Q2V3s1k3K5" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
   <div class="page">
@@ -17,34 +18,34 @@
         </div>
       </div>
       <nav>
-        <a href="/cart">Cart ({{ cart_count }})</a>
+        <a href="/cart"><i class="fas fa-shopping-cart"></i> Cart ({{ cart_count }})</a>
         <a href="/order-history">Orders</a>
         {% if session.get('user') %}
-          <a href="/logout">Sign Out</a>
+          <a href="/logout"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         {% else %}
-          <a href="/login">Sign In</a>
+          <a href="/login"><i class="fas fa-sign-in-alt"></i> Sign In</a>
         {% endif %}
       </nav>
     </header>
 
     <section class="hero">
       <div class="hero-content">
-        <div class="hero-copy">
+        <div class="hero-copy parallax-text" data-speed="-0.25">
           <span class="hero-tag">Farm Feed & Foodstuffs Marketplace</span>
           <h2>Farm feed, foodstuffs, and livestock for every homestead</h2>
           <p>Discover fresh livestock, premium feed, pantry foodstuffs, and farmhouse staples crafted for every farm and family.</p>
           <div class="hero-actions">
             {% if session.get('user') %}
-              <a class="hero-button" href="/account">My Account</a>
+              <a class="hero-button" href="/account"><i class="fas fa-user"></i> My Account</a>
             {% else %}
-              <a class="hero-button" href="/login">Sign In</a>
+              <a class="hero-button" href="/login"><i class="fas fa-sign-in-alt"></i> Sign In</a>
             {% endif %}
-            <a class="hero-button ghost" href="/cart">View Cart ({{ cart_count }})</a>
+            <a class="hero-button ghost" href="/cart"><i class="fas fa-shopping-cart"></i> View Cart ({{ cart_count }})</a>
           </div>
         </div>
 
         <div class="hero-visual">
-          <img src="/images/company_cows.jpg" alt="Farm livestock scene" class="hero-image" />
+          <img src="/images/company_cows.jpg" alt="Farm livestock scene" class="hero-image parallax" data-speed="0.18" />
           <div class="hero-cards">
             <article class="hero-card">
               <h3>Farm-Fresh Feed</h3>

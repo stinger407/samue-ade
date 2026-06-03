@@ -887,3 +887,25 @@ input[type="text"], input[type="email"], select {
   color: #666;
   margin-bottom: 18px;
 }
+
+/* Parallax helpers */
+.parallax,
+.parallax-text {
+  will-change: transform;
+  transition: transform 0.25s linear;
+}
+
+.parallax {
+  transform: translateZ(0);
+}
+
+.parallax-text {
+  /* slightly reduce opacity for depth effect */
+  opacity: 0.98;
+}
+
+/* Small helper to use FA icons in buttons */
+.hero-button i,
+button i {
+  margin-right: 8px;
+}
