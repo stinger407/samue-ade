@@ -58,48 +58,66 @@ def close_db(exception):
 
 def init_db():
     create_database = not os.path.exists(DATABASE)
-    db = sqlite3.connect(DATABASE)
-    cursor = db.cursor()
+    db = None
 
-    if create_database:
+    def create_schema(conn, cursor):
         cursor.execute(
-            "CREATE TABLE menu (id INTEGER PRIMARY KEY, name TEXT, price REAL, description TEXT, category TEXT, image_url TEXT)"
-        )
-        cursor.execute(
-            "CREATE TABLE orders (id INTEGER PRIMARY KEY AUTOINCREMENT, items TEXT, total REAL, customer_name TEXT, customer_email TEXT, payment_method TEXT, created_at TEXT)"
+            "CREATE TABLE IF NOT EXISTS menu (id INTEGER PRIMARY KEY, name TEXT, price REAL, description TEXT, category TEXT, image_url TEXT)"
         )
         cursor.execute(
-            "CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE)"
+            "CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, items TEXT, total REAL, customer_name TEXT, customer_email TEXT, payment_method TEXT, created_at TEXT)"
         )
-        cursor.executemany(
-            "INSERT INTO menu (id, name, price, description, category) VALUES (?, ?, ?, ?, ?)", MENU_ITEMS
+        cursor.execute(
+            "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE)"
         )
-        db.commit()
-    else:
-        # ensure orders table has required columns (for upgrades)
-        cursor.execute("PRAGMA table_info(orders)")
-        existing_columns = [row[1] for row in cursor.fetchall()]
-        if "customer_name" not in existing_columns:
-            cursor.execute("ALTER TABLE orders ADD COLUMN customer_name TEXT")
-        if "customer_email" not in existing_columns:
-            cursor.execute("ALTER TABLE orders ADD COLUMN customer_email TEXT")
-        if "payment_method" not in existing_columns:
-            cursor.execute("ALTER TABLE orders ADD COLUMN payment_method TEXT")
-        if "created_at" not in existing_columns:
-            cursor.execute("ALTER TABLE orders ADD COLUMN created_at TEXT")
-        cursor.execute("PRAGMA table_info(menu)")
-        menu_columns = [row[1] for row in cursor.fetchall()]
-        if "category" not in menu_columns:
-            cursor.execute("ALTER TABLE menu ADD COLUMN category TEXT")
-        if "image_url" not in menu_columns:
-            cursor.execute("ALTER TABLE menu ADD COLUMN image_url TEXT")
-        # create users table if missing
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
-        if not cursor.fetchone():
-            cursor.execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE)")
-        db.commit()
+        cursor.execute("SELECT COUNT(*) FROM menu")
+        if cursor.fetchone()[0] == 0:
+            cursor.executemany(
+                "INSERT INTO menu (id, name, price, description, category) VALUES (?, ?, ?, ?, ?)", MENU_ITEMS
+            )
+        conn.commit()
 
-    db.close()
+    try:
+        db = sqlite3.connect(DATABASE)
+        cursor = db.cursor()
+        cursor.execute("PRAGMA quick_check")
+        if cursor.fetchone()[0] != "ok":
+            raise sqlite3.DatabaseError("Database integrity check failed")
+
+        if create_database:
+            create_schema(db, cursor)
+        else:
+            cursor.execute("PRAGMA table_info(orders)")
+            existing_columns = [row[1] for row in cursor.fetchall()]
+            if "customer_name" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN customer_name TEXT")
+            if "customer_email" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN customer_email TEXT")
+            if "payment_method" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN payment_method TEXT")
+            if "created_at" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN created_at TEXT")
+            cursor.execute("PRAGMA table_info(menu)")
+            menu_columns = [row[1] for row in cursor.fetchall()]
+            if "category" not in menu_columns:
+                cursor.execute("ALTER TABLE menu ADD COLUMN category TEXT")
+            if "image_url" not in menu_columns:
+                cursor.execute("ALTER TABLE menu ADD COLUMN image_url TEXT")
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+            if not cursor.fetchone():
+                cursor.execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE)")
+            db.commit()
+    except (sqlite3.DatabaseError, sqlite3.OperationalError):
+        if db is not None:
+            db.close()
+        if os.path.exists(DATABASE):
+            os.remove(DATABASE)
+        db = sqlite3.connect(DATABASE)
+        cursor = db.cursor()
+        create_schema(db, cursor)
+    finally:
+        if db is not None:
+            db.close()
 
 
 @app.before_request
