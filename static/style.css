@@ -611,6 +611,97 @@ a.hero-button:hover {
   background: #234524;
 }
 
+.signin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 15, 10, 0.58);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.signin-modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.signin-modal {
+  width: min(460px, 100%);
+  background: #fffdf8;
+  border-radius: 24px;
+  box-shadow: 0 18px 45px rgba(17, 36, 20, 0.2);
+  padding: 24px;
+  border: 1px solid rgba(47, 80, 25, 0.12);
+  position: relative;
+}
+
+.signin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.signin-modal-header h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #17331f;
+}
+
+.signin-modal-header p {
+  margin: 6px 0 0;
+  color: #4d5f50;
+  line-height: 1.5;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  color: #2b472a;
+  font-size: 1.25rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.signin-modal .form-group {
+  margin-bottom: 14px;
+}
+
+.signin-modal .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+  color: #2f4b32;
+}
+
+.signin-modal .form-group input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cdd8cd;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.signin-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.signin-modal-actions .ghost {
+  background: #f7faf4;
+  color: #2a3f2a;
+  border: 1px solid #c8d7c5;
+}
+
 button.ghost:hover,
 a.hero-button.ghost:hover {
   background: #e5e7eb;

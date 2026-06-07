@@ -12,6 +12,34 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papH6f0hKxY2Yb9H9Vf0sVn1KQZk1+Y1q8+F6Z1Yx1q0eVQ1Y5h2g2Q2V3s1k3K5" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
+  {% if not session.get('user') %}
+  <div class="signin-modal-overlay show" id="signinModal" aria-hidden="false">
+    <div class="signin-modal" role="dialog" aria-modal="true" aria-labelledby="signinModalTitle">
+      <div class="signin-modal-header">
+        <div>
+          <h3 id="signinModalTitle">Welcome back</h3>
+          <p>Sign in to save your details and view your order history.</p>
+        </div>
+        <button type="button" class="modal-close" id="closeSigninModal" aria-label="Close sign in popup">×</button>
+      </div>
+      <form method="POST" action="/login">
+        <div class="form-group">
+          <label for="modal-name">First Name</label>
+          <input id="modal-name" type="text" name="name" required placeholder="Enter your name" />
+        </div>
+        <div class="form-group">
+          <label for="modal-email">Email</label>
+          <input id="modal-email" type="email" name="email" required placeholder="Enter your email" />
+        </div>
+        <div class="signin-modal-actions">
+          <button type="button" class="ghost" id="cancelSigninModal">Cancel</button>
+          <button type="submit">Sign In</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
   <div class="page">
     <header class="site-header">
       <div class="header-brand">
@@ -196,5 +224,29 @@
     </footer>
   </div>
   <script src="/static/scroll.js"></script>
+  <script>
+    (function () {
+      const modal = document.getElementById('signinModal');
+      if (!modal) return;
+
+      function closeModal() {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      const cancelBtn = document.getElementById('cancelSigninModal');
+      const closeBtn = document.getElementById('closeSigninModal');
+
+      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal();
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') closeModal();
+      });
+    })();
+  </script>
 </body>
 </html>
