@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O'FAME LEGACY - Track Order {{ order['tracking_id'] }}</title>
+  <meta property="og:title" content="Track Your Order — O'FAME Farm Feed &amp; Foodstuffs" />
+  <meta property="og:description" content="Track your O'FAME delivery in real time." />
+  <meta property="og:image" content="/images/UQGQ6407.JPG" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <div class="header-brand">
+        <a href="/">
+          <img class="site-logo" src="/images/UQGQ6407.JPG" alt="O'FAME Farm Feed logo" />
+        </a>
+        <div>
+          <h1>O'FAME Farm Feed &amp; Foodstuffs</h1>
+          <p class="site-tagline">Track your delivery in real time.</p>
+        </div>
+      </div>
+      <nav>
+        <a href="/"><i class="fas fa-store"></i> Shop</a>
+        {% if session.get('user') %}
+          <a href="/account"><i class="fas fa-user"></i> My Account</a>
+        {% endif %}
+      </nav>
+    </header>
+
+    <section class="checkout reveal-on-scroll" style="max-width:680px;margin:32px auto;">
+      <!-- Tracking Header -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2f5019,#5a8a30);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;flex-shrink:0;">
+          <i class="fas fa-truck"></i>
+        </div>
+        <div>
+          <h2 style="margin:0 0 4px;">Order Tracking</h2>
+          <p style="margin:0;color:#657a66;font-size:0.95rem;">Tracking ID: <strong style="color:#1f4e1d;letter-spacing:0.05em;">{{ order['tracking_id'] }}</strong></p>
+        </div>
+      </div>
+
+      <!-- Order Details Summary -->
+      <div style="background:rgba(47,80,25,0.06);border-radius:16px;padding:18px 22px;margin-bottom:28px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;">
+          <div>
+            <div style="font-size:0.78rem;color:#657a66;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.04em;">Customer</div>
+            <div style="font-weight:600;color:#1f4e1d;">{{ order['customer_name'] }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:#657a66;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.04em;">Items</div>
+            <div style="font-weight:600;color:#1f4e1d;">{{ order['items'] }}</div>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:#657a66;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.04em;">Total</div>
+            <div style="font-weight:600;color:#1f4e1d;">₦{{ '%.2f' | format(order['total']) }}</div>
+          </div>
+          {% if order['delivery_address'] %}
+          <div>
+            <div style="font-size:0.78rem;color:#657a66;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.04em;">Delivery To</div>
+            <div style="font-weight:600;color:#1f4e1d;">{{ order['delivery_address'] }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Status Timeline -->
+      <h3 style="margin-bottom:20px;">Delivery Status</h3>
+      <div class="tracking-timeline">
+        {% set status_icons = ['fas fa-check', 'fas fa-cog', 'fas fa-box', 'fas fa-motorcycle', 'fas fa-home'] %}
+        {% for step in statuses %}
+          {% set i = loop.index0 %}
+          {% set is_done = i <= current_index %}
+          {% set is_current = i == current_index %}
+          <div class="tracking-step {% if is_done %}done{% endif %} {% if is_current %}current{% endif %}">
+            <div class="tracking-dot">
+              <i class="{{ status_icons[i] }}"></i>
+            </div>
+            <div class="tracking-label">
+              <strong>{{ step }}</strong>
+              {% if is_current %}
+                <span class="tracking-now">Current</span>
+              {% endif %}
+            </div>
+            {% if not loop.last %}
+              <div class="tracking-line {% if i < current_index %}done{% endif %}"></div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      {% if order['status_updated_at'] %}
+        <p style="margin-top:24px;color:#657a66;font-size:0.88rem;text-align:center;"><i class="fas fa-clock"></i> Last updated: {{ order['status_updated_at'] }}</p>
+      {% endif %}
+
+      <div style="margin-top:28px;text-align:center;">
+        <a href="/" class="hero-button ghost"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+        {% if session.get('user') %}
+          <a href="/account" class="hero-button" style="margin-left:12px;"><i class="fas fa-user"></i> My Account</a>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Add enumerate support for Jinja2 if needed
+  </script>
+  <script src="/static/scroll.js"></script>
+</body>
+</html>

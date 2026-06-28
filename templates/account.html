@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>O'FAME LEGACY - My Account</title>
-  <meta property="og:title" content="My Account — O'FAME Farm Feed & Foodstuffs" />
+  <meta property="og:title" content="My Account — O'FAME Farm Feed &amp; Foodstuffs" />
   <meta property="og:description" content="Manage your account and view recent orders." />
   <meta property="og:image" content="/images/UQGQ6407.JPG" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
   <div class="page">
@@ -18,15 +19,15 @@
           <img class="site-logo" src="/images/UQGQ6407.JPG" alt="O'FAME Farm Feed logo" />
         </a>
         <div>
-          <h1>O'FAME Farm Feed & Foodstuffs</h1>
+          <h1>O'FAME Farm Feed &amp; Foodstuffs</h1>
           <p class="site-tagline">Farm feed, foodstuffs, and livestock in one trusted marketplace.</p>
         </div>
       </div>
       <nav>
-        <a href="/">Menu</a>
-        <a href="/cart">Cart ({{ cart_count|default(0) }})</a>
-        <a href="/order-history">Order History</a>
-        <a href="/logout">Sign Out</a>
+        <a href="/"><i class="fas fa-store"></i> Menu</a>
+        <a href="/cart"><i class="fas fa-shopping-cart"></i> Cart ({{ cart_count|default(0) }})</a>
+        <a href="/order-history"><i class="fas fa-history"></i> Orders</a>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
       </nav>
     </header>
 
@@ -34,48 +35,112 @@
       {% if messages %}
         <div class="flash">
           {% for message in messages %}
-            {% set ml = message|lower %}
-            {% if 'signed in' not in ml and 'signed out' not in ml and 'updated' not in ml and not (session.get('user') and session.get('user').name in message) %}
-              <p>{{ message }}</p>
-            {% endif %}
+            <p>{{ message }}</p>
           {% endfor %}
         </div>
       {% endif %}
     {% endwith %}
 
-    <section class="checkout reveal-on-scroll">
-      <h2>Welcome, {{ user.name }}</h2>
-      <p>Email: {{ user.email }}</p>
-      <p>Favorite category: {{ user.favorite_category or 'Not set' }}</p>
-      <div class="account-actions">
-        <a class="hero-button" href="/order-history">View Order History</a>
-        <a class="hero-button ghost" href="/cart">View Cart</a>
+    <!-- Account Overview -->
+    <section class="checkout reveal-on-scroll" style="margin-bottom:0;">
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px;">
+        <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2f5019,#5a8a30);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;font-weight:700;flex-shrink:0;">
+          {{ user['name'][0].upper() if user['name'] else '?' }}
+        </div>
+        <div>
+          <h2 style="margin:0;">{{ user['name'] }}</h2>
+          <p style="margin:2px 0;color:#475d48;font-size:0.95rem;">{{ user['email'] }}</p>
+          {% if user['verified'] %}
+            <span class="status-badge status-delivered" style="font-size:0.78rem;"><i class="fas fa-check-circle"></i> Verified</span>
+          {% else %}
+            <span class="status-badge status-confirmed" style="font-size:0.78rem;"><i class="fas fa-clock"></i> Not verified</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px;">
+        <div style="background:rgba(47,80,25,0.07);border-radius:14px;padding:14px 18px;">
+          <div style="font-size:0.8rem;color:#657a66;margin-bottom:4px;"><i class="fas fa-phone"></i> Phone</div>
+          <div style="font-weight:600;color:#1f4e1d;">{{ user['phone'] or 'Not set' }}</div>
+        </div>
+        <div style="background:rgba(47,80,25,0.07);border-radius:14px;padding:14px 18px;">
+          <div style="font-size:0.8rem;color:#657a66;margin-bottom:4px;"><i class="fas fa-map-marker-alt"></i> Delivery Address</div>
+          <div style="font-weight:600;color:#1f4e1d;">{{ user['address'] or 'Not set' }}</div>
+        </div>
+      </div>
+
+      <div class="account-actions" style="margin-bottom:0;">
+        <a class="hero-button" href="/order-history"><i class="fas fa-history"></i> Order History</a>
+        <a class="hero-button ghost" href="/cart"><i class="fas fa-shopping-cart"></i> View Cart</a>
+        <button class="hero-button ghost" id="toggleEditBtn" onclick="document.getElementById('editForm').style.display=document.getElementById('editForm').style.display==='none'?'block':'none';this.innerHTML=this.innerHTML.includes('Edit')?'<i class=\'fas fa-times\'></i> Cancel':'<i class=\'fas fa-edit\'></i> Edit Details';" style="cursor:pointer;"><i class="fas fa-edit"></i> Edit Details</button>
       </div>
     </section>
 
+    <!-- Edit Profile Form (hidden by default) -->
+    <section id="editForm" style="display:none;" class="checkout reveal-on-scroll" style="margin-top:0;padding-top:16px;">
+      <h3 style="margin-bottom:16px;">Update Your Details</h3>
+      <form method="POST" action="/account/update">
+        <div class="form-group">
+          <label for="edit-phone">Phone Number</label>
+          <input id="edit-phone" type="tel" name="phone" value="{{ user['phone'] or '' }}" placeholder="+234 800 000 0000" />
+        </div>
+        <div class="form-group">
+          <label for="edit-address">Delivery Address</label>
+          <input id="edit-address" type="text" name="address" value="{{ user['address'] or '' }}" placeholder="Street, City, State" />
+        </div>
+        <button type="submit"><i class="fas fa-save"></i> Save Changes</button>
+      </form>
+    </section>
+
+    <!-- Recent Orders with Tracking -->
     <section class="order-history reveal-on-scroll">
       <h2>Recent Orders</h2>
       {% if orders %}
-        <table>
-          <thead>
-            <tr>
-              <th>Order</th>
-              <th>Total</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for order in orders[:5] %}
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
               <tr>
-                <td>{{ order.items }}</td>
-                <td>₦{{ '%.2f' | format(order.total) }}</td>
-                <td>{{ order.created_at }}</td>
+                <th>Tracking ID</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Track</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for order in orders[:5] %}
+                <tr>
+                  <td><code style="font-size:0.85rem;background:rgba(47,80,25,0.08);padding:3px 8px;border-radius:6px;">{{ order['tracking_id'] or 'N/A' }}</code></td>
+                  <td>{{ order['items'] }}</td>
+                  <td>₦{{ '%.2f' | format(order['total']) }}</td>
+                  <td>
+                    {% set s = order['status'] or 'Confirmed' %}
+                    {% if s == 'Delivered' %}
+                      <span class="status-badge status-delivered">{{ s }}</span>
+                    {% elif s == 'Out for Delivery' %}
+                      <span class="status-badge status-dispatched">{{ s }}</span>
+                    {% elif s == 'Dispatched' %}
+                      <span class="status-badge status-processing">{{ s }}</span>
+                    {% elif s == 'Processing' %}
+                      <span class="status-badge status-processing">{{ s }}</span>
+                    {% else %}
+                      <span class="status-badge status-confirmed">{{ s }}</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ order['created_at'] }}</td>
+                  <td>
+                    {% if order['tracking_id'] %}
+                      <a href="/track/{{ order['tracking_id'] }}" class="hero-button" style="font-size:0.82rem;padding:6px 12px;"><i class="fas fa-map-marked-alt"></i> Track</a>
+                    {% else %}—{% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       {% else %}
-        <p>No orders found yet. Start shopping to place your first order.</p>
+        <p>No orders found yet. <a href="/" style="color:#2f5019;font-weight:600;">Start shopping</a> to place your first order.</p>
       {% endif %}
     </section>
   </div>

@@ -55,6 +55,11 @@
         </div>
 
         <div class="form-group">
+          <label for="delivery_address">Delivery Address</label>
+          <input id="delivery_address" type="text" name="delivery_address" required placeholder="Street, City, State" value="{{ saved_address or (session.get('user').address if session.get('user') else '') }}" />
+        </div>
+
+        <div class="form-group">
           <label for="payment_method">Payment Method</label>
           <select id="payment_method" name="payment_method">
             <option>Credit / Debit Card</option>

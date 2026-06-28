@@ -1,12 +1,29 @@
+
+
 from flask import Flask, g, render_template, request, redirect, url_for, session, flash, send_from_directory
 import sqlite3
 import os
 import datetime
+import secrets
+import random
+import string
+from models import db, User, save_token_for_user
+from email_utils import send_confirmation_email
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret")  # set SECRET_KEY in production
-DATABASE = os.path.join(os.path.dirname(__file__), "food.db")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "adminpass")
+app.secret_key = "ofame-legacy-secret-key"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+db.init_app(app)
+
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'adminpass')
+
+
+# The duplicate login_confirm route has been removed. Unified route is defined below.
+
+@app.route('/clear-session')
+def clear_session():
+    session.clear()
+    return redirect(url_for("index"))
 
 MENU_ITEMS = [
     (1, "Beef - Ribeye (per kg)", 18.50, "Premium ribeye beef, trimmed and ready to cook.", "Meat"),
@@ -40,7 +57,7 @@ def normalize_image_url(url):
 def serve_image(filename):
     return send_from_directory(os.path.join(os.path.dirname(__file__), 'images'), filename)
 
-
+DATABASE = "food.db"
 def get_db():
     db = getattr(g, "db", None)
     if db is None:
@@ -65,10 +82,10 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS menu (id INTEGER PRIMARY KEY, name TEXT, price REAL, description TEXT, category TEXT, image_url TEXT)"
         )
         cursor.execute(
-            "CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, items TEXT, total REAL, customer_name TEXT, customer_email TEXT, payment_method TEXT, created_at TEXT)"
+            "CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, items TEXT, total REAL, customer_name TEXT, customer_email TEXT, payment_method TEXT, created_at TEXT, tracking_id TEXT, delivery_address TEXT, status TEXT DEFAULT 'Confirmed', status_updated_at TEXT)"
         )
         cursor.execute(
-            "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE)"
+            "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE, token TEXT, verified INTEGER DEFAULT 0, phone TEXT, address TEXT)"
         )
         cursor.execute("SELECT COUNT(*) FROM menu")
         if cursor.fetchone()[0] == 0:
@@ -97,6 +114,14 @@ def init_db():
                 cursor.execute("ALTER TABLE orders ADD COLUMN payment_method TEXT")
             if "created_at" not in existing_columns:
                 cursor.execute("ALTER TABLE orders ADD COLUMN created_at TEXT")
+            if "tracking_id" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN tracking_id TEXT")
+            if "delivery_address" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN delivery_address TEXT")
+            if "status" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'Confirmed'")
+            if "status_updated_at" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN status_updated_at TEXT")
             cursor.execute("PRAGMA table_info(menu)")
             menu_columns = [row[1] for row in cursor.fetchall()]
             if "category" not in menu_columns:
@@ -105,7 +130,18 @@ def init_db():
                 cursor.execute("ALTER TABLE menu ADD COLUMN image_url TEXT")
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
             if not cursor.fetchone():
-                cursor.execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE)")
+                cursor.execute("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE, token TEXT, verified INTEGER DEFAULT 0, phone TEXT, address TEXT)")
+            else:
+                cursor.execute("PRAGMA table_info(users)")
+                users_columns = [row[1] for row in cursor.fetchall()]
+                if "token" not in users_columns:
+                    cursor.execute("ALTER TABLE users ADD COLUMN token TEXT")
+                if "verified" not in users_columns:
+                    cursor.execute("ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0")
+                if "phone" not in users_columns:
+                    cursor.execute("ALTER TABLE users ADD COLUMN phone TEXT")
+                if "address" not in users_columns:
+                    cursor.execute("ALTER TABLE users ADD COLUMN address TEXT")
             db.commit()
     except (sqlite3.DatabaseError, sqlite3.OperationalError):
         if db is not None:
@@ -122,7 +158,12 @@ def init_db():
 
 @app.before_request
 def setup():
-    init_db()
+    # Safeguard: if user is marked logged_in but no user exists in session, clear it.
+    # This prevents redirect loops and fixes the missing homepage popup for legacy sessions.
+    if session.get('logged_in') and not session.get('user'):
+        session.pop('logged_in', None)
+
+
 
 
 def row_to_item(row):
@@ -215,28 +256,100 @@ def add_to_cart():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if session.get('user'):
+        return redirect(url_for('account'))
+
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        email = request.form.get('email', '').strip()
-        if not name or not email:
-            flash('Please enter name and email.')
+        email = request.form.get('email', '').strip().lower()
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        name_field = request.form.get('name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        address = request.form.get('address', '').strip()
+
+        # Handle name formatting from different forms
+        if first_name or last_name:
+            name = f"{first_name} {last_name}".strip()
+        else:
+            name = name_field
+
+        if not email:
+            flash('Email is required.')
             return redirect(url_for('login'))
-        session['user'] = {'name': name, 'email': email}
-        # optionally store user in DB
+        if not name:
+            name = email.split('@')[0]
+
         db = get_db()
-        try:
-            db.execute('INSERT OR IGNORE INTO users (name, email) VALUES (?, ?)', (name, email))
+        # Find or create user in SQLite database
+        user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        if not user:
+            db.execute("INSERT INTO users (name, email, phone, address) VALUES (?, ?, ?, ?)", (name, email, phone or None, address or None))
             db.commit()
-        except Exception:
-            pass
-        flash('Logged in successfully.')
-        return redirect(url_for('index'))
+            user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+        else:
+            # Update phone/address if provided and not already set
+            if phone and not user['phone']:
+                db.execute("UPDATE users SET phone = ? WHERE id = ?", (phone, user['id']))
+            if address and not user['address']:
+                db.execute("UPDATE users SET address = ? WHERE id = ?", (address, user['id']))
+            db.commit()
+            user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+
+        # Generate verification token
+        token = secrets.token_urlsafe(32)
+        db.execute("UPDATE users SET token = ? WHERE id = ?", (token, user['id']))
+        db.commit()
+
+        # Build dynamic verification link
+        verification_link = request.url_root.rstrip('/') + url_for('verify', token=token)
+
+        # Send verification/confirmation code via email
+        send_confirmation_email(email, verification_link, token)
+
+        # Log in immediately (so modal won't show and user takes directly to account page)
+        session['logged_in'] = True
+        session['user'] = {
+            'name': user['name'], 'email': user['email'],
+            'phone': user['phone'], 'address': user['address']
+        }
+
+        flash('Your account has been created and you are now signed in. A confirmation link has been sent to your Gmail.')
+        return redirect(url_for('account'))
+
     return render_template('login.html')
+
+
+@app.route('/verify')
+def verify():
+    token = request.args.get('token', '').strip()
+    if not token:
+        flash("Invalid or missing verification token.")
+        return redirect(url_for('index'))
+
+    db = get_db()
+    user = db.execute("SELECT * FROM users WHERE token = ?", (token,)).fetchone()
+    if user:
+        db.execute("UPDATE users SET verified = 1 WHERE id = ?", (user['id'],))
+        db.commit()
+
+        # Log the user in if they aren't already
+        session['logged_in'] = True
+        session['user'] = {
+            'name': user['name'], 'email': user['email'],
+            'phone': user['phone'], 'address': user['address']
+        }
+
+        flash("Your email has been verified successfully!")
+        return redirect(url_for('account'))
+    else:
+        flash("Verification token is invalid or has expired.")
+        return redirect(url_for('index'))
 
 
 @app.route('/logout')
 def logout():
     session.pop('user', None)
+    session.pop('logged_in', None)
     flash('You have been logged out.')
     return redirect(url_for('index'))
 
@@ -467,7 +580,15 @@ def checkout():
         return redirect(url_for("index"))
 
     cart_items, total = build_cart_items(cart)
-    return render_template("checkout.html", cart_items=cart_items, total=total)
+    # Load full user from DB to get saved address
+    saved_address = ''
+    session_user = session.get('user')
+    if session_user:
+        db = get_db()
+        db_user = db.execute("SELECT address FROM users WHERE email = ?", (session_user['email'],)).fetchone()
+        if db_user and db_user['address']:
+            saved_address = db_user['address']
+    return render_template("checkout.html", cart_items=cart_items, total=total, saved_address=saved_address)
 
 
 @app.route("/place-order", methods=["POST"])
@@ -481,6 +602,7 @@ def place_order():
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip()
     payment_method = request.form.get("payment_method", "Card")
+    delivery_address = request.form.get("delivery_address", "").strip()
 
     if session_user:
         name = session_user.get("name", name)
@@ -494,15 +616,18 @@ def place_order():
     order_lines = [f"{item['quantity']}× {item['name']}" for item in cart_items]
     created_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
+    # Generate unique tracking ID e.g. OFM-A4B2C1
+    tracking_id = "OFM-" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
     db = get_db()
     db.execute(
-        "INSERT INTO orders (items, total, customer_name, customer_email, payment_method, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-        (", ".join(order_lines), total, name, email, payment_method, created_at),
+        "INSERT INTO orders (items, total, customer_name, customer_email, payment_method, created_at, tracking_id, delivery_address, status, status_updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (", ".join(order_lines), total, name, email, payment_method, created_at, tracking_id, delivery_address or None, 'Confirmed', created_at),
     )
     db.commit()
 
     session["cart"] = {}
-    flash("Order placed successfully! Thank you.")
+    flash(f"Order placed successfully! Your tracking ID is {tracking_id}. Thank you.")
     return redirect(url_for("order_history"))
 
 
@@ -511,15 +636,40 @@ def account():
     if not session.get('user'):
         flash('Please sign in to view your account.')
         return redirect(url_for('login'))
-    user = session['user']
+    session_user = session['user']
     cart = session.get('cart', {})
     cart_count = sum(cart.values())
     db = get_db()
+    # Load full user from DB to get phone, address, verified status
+    user = db.execute("SELECT * FROM users WHERE email = ?", (session_user['email'],)).fetchone()
+    if not user:
+        flash('User record not found. Please sign in again.')
+        return redirect(url_for('login'))
     orders = db.execute(
         'SELECT * FROM orders WHERE customer_email = ? ORDER BY substr(created_at,1,19) DESC',
         (user['email'],)
     ).fetchall()
     return render_template('account.html', user=user, orders=orders, cart_count=cart_count)
+
+
+@app.route('/account/update', methods=['POST'])
+def account_update():
+    if not session.get('user'):
+        return redirect(url_for('login'))
+    email = session['user']['email']
+    phone = request.form.get('phone', '').strip()
+    address = request.form.get('address', '').strip()
+    db = get_db()
+    db.execute("UPDATE users SET phone = ?, address = ? WHERE email = ?", (phone or None, address or None, email))
+    db.commit()
+    # Refresh session with new data
+    user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+    session['user'] = {
+        'name': user['name'], 'email': user['email'],
+        'phone': user['phone'], 'address': user['address']
+    }
+    flash('Your details have been updated successfully.')
+    return redirect(url_for('account'))
 
 
 @app.route("/order-history")
@@ -560,5 +710,42 @@ def order_history():
     return render_template("order_history.html", orders=orders, q=q, sort=sort, date_from=date_from, date_to=date_to)
 
 
+@app.route('/track/<tracking_id>')
+def track_order(tracking_id):
+    db = get_db()
+    order = db.execute("SELECT * FROM orders WHERE tracking_id = ?", (tracking_id.upper(),)).fetchone()
+    if not order:
+        flash("No order found with that tracking ID.")
+        return redirect(url_for('index'))
+    statuses = ['Confirmed', 'Processing', 'Dispatched', 'Out for Delivery', 'Delivered']
+    current_index = statuses.index(order['status']) if order['status'] in statuses else 0
+    return render_template('track.html', order=order, statuses=statuses, current_index=current_index)
+
+
+@app.route('/admin/orders/update-status/<int:order_id>', methods=['POST'])
+@admin_required
+def admin_update_order_status(order_id):
+    new_status = request.form.get('status', '').strip()
+    valid_statuses = ['Confirmed', 'Processing', 'Dispatched', 'Out for Delivery', 'Delivered']
+    if new_status not in valid_statuses:
+        flash('Invalid status.')
+        return redirect(url_for('admin_orders'))
+    updated_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    db = get_db()
+    db.execute(
+        "UPDATE orders SET status = ?, status_updated_at = ? WHERE id = ?",
+        (new_status, updated_at, order_id)
+    )
+    db.commit()
+    flash(f'Order #{order_id} status updated to "{new_status}".')
+    return redirect(url_for('admin_orders'))
+
+
+# Initialize database once at startup
+with app.app_context():
+    init_db()
+
 if __name__ == "__main__":
     app.run(debug=True)
+
+

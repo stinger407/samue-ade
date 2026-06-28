@@ -17,23 +17,35 @@
     <div class="signin-modal" role="dialog" aria-modal="true" aria-labelledby="signinModalTitle">
       <div class="signin-modal-header">
         <div>
-          <h3 id="signinModalTitle">Welcome back</h3>
-          <p>Sign in to save your details and view your order history.</p>
+          <h3 id="signinModalTitle">Welcome to O'FAME</h3>
+          <p>Create your account to save details and track your orders.</p>
         </div>
         <button type="button" class="modal-close" id="closeSigninModal" aria-label="Close sign in popup">×</button>
       </div>
       <form method="POST" action="/login">
         <div class="form-group">
-          <label for="modal-name">First Name</label>
-          <input id="modal-name" type="text" name="name" required placeholder="Enter your name" />
+          <label for="modal-first-name">First Name</label>
+          <input id="modal-first-name" type="text" name="first_name" required placeholder="Your first name" />
+        </div>
+        <div class="form-group">
+          <label for="modal-last-name">Last Name</label>
+          <input id="modal-last-name" type="text" name="last_name" required placeholder="Your last name" />
         </div>
         <div class="form-group">
           <label for="modal-email">Email</label>
-          <input id="modal-email" type="email" name="email" required placeholder="Enter your email" />
+          <input id="modal-email" type="email" name="email" required placeholder="your@gmail.com" />
+        </div>
+        <div class="form-group">
+          <label for="modal-phone">Phone Number</label>
+          <input id="modal-phone" type="tel" name="phone" placeholder="+234 800 000 0000" />
+        </div>
+        <div class="form-group">
+          <label for="modal-address">Delivery Address</label>
+          <input id="modal-address" type="text" name="address" placeholder="Street, City, State" />
         </div>
         <div class="signin-modal-actions">
           <button type="button" class="ghost" id="cancelSigninModal">Cancel</button>
-          <button type="submit">Sign In</button>
+          <button type="submit">Create Account</button>
         </div>
       </form>
     </div>
@@ -203,6 +215,23 @@
         <div class="footer-block">
           <h3>About Us</h3>
           <p>O'FAME Farm Feed & Foodstuffs brings quality livestock, farm feed, foodstuffs, and pantry essentials to farms and homesteads with care and transparency.</p>
+        </div>
+        <div class="footer-block">
+          <h3>FAQ</h3>
+          <div style="font-size: 0.95rem; color: #3e5543; line-height: 1.6; display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
+            <div>
+              <strong style="color: #1f4e1d; display: block; margin-bottom: 2px;">Do you deliver nationwide?</strong>
+              Yes, we ship farm feed and foodstuffs directly to your location.
+            </div>
+            <div>
+              <strong style="color: #1f4e1d; display: block; margin-bottom: 2px;">What are the payment options?</strong>
+              We accept online card payments, bank transfers, and cash on delivery.
+            </div>
+            <div>
+              <strong style="color: #1f4e1d; display: block; margin-bottom: 2px;">How to check order status?</strong>
+              Sign in to your account page to view your complete order history.
+            </div>
+          </div>
         </div>
         <div class="footer-block">
           <h3>Social Media</h3>

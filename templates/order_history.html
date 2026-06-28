@@ -48,30 +48,49 @@
         <button type="submit">Filter</button>
       </form>
       {% if orders %}
+        <div style="overflow-x:auto;">
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th>Tracking ID</th>
               <th>Items</th>
               <th>Total</th>
-              <th>Customer</th>
+              <th>Status</th>
               <th>Payment</th>
               <th>Date</th>
+              <th>Track</th>
             </tr>
           </thead>
           <tbody>
             {% for order in orders %}
               <tr>
-                <td>{{ order.id }}</td>
-                <td>{{ order.items }}</td>
-                <td>₦{{ '%.2f' | format(order.total) }}</td>
-                <td>{{ order.customer_name }}<br>{{ order.customer_email }}</td>
-                <td>{{ order.payment_method }}</td>
-                <td>{{ order.created_at }}</td>
+                <td><code style="font-size:0.83rem;background:rgba(47,80,25,0.08);padding:3px 8px;border-radius:6px;">{{ order['tracking_id'] or 'N/A' }}</code></td>
+                <td>{{ order['items'] }}</td>
+                <td>₦{{ '%.2f' | format(order['total']) }}</td>
+                <td>
+                  {% set s = order['status'] or 'Confirmed' %}
+                  {% if s == 'Delivered' %}
+                    <span class="status-badge status-delivered">{{ s }}</span>
+                  {% elif s == 'Out for Delivery' %}
+                    <span class="status-badge status-dispatched">{{ s }}</span>
+                  {% elif s == 'Dispatched' or s == 'Processing' %}
+                    <span class="status-badge status-processing">{{ s }}</span>
+                  {% else %}
+                    <span class="status-badge status-confirmed">{{ s }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ order['payment_method'] }}</td>
+                <td>{{ order['created_at'] }}</td>
+                <td>
+                  {% if order['tracking_id'] %}
+                    <a href="/track/{{ order['tracking_id'] }}" class="hero-button" style="font-size:0.82rem;padding:6px 12px;"><i class="fas fa-map-marked-alt"></i> Track</a>
+                  {% else %}—{% endif %}
+                </td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
+        </div>
       {% else %}
         <p>No orders yet. Place your first order from the menu.</p>
       {% endif %}
