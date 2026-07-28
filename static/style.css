@@ -383,12 +383,26 @@ nav a {
   font-weight: 700;
   padding: 10px 14px;
   border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   transition: background 0.2s ease, color 0.2s ease;
+}
+
+nav a i {
+  font-size: 1.05em;
+  color: #3b6e29;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 nav a:hover {
   background: rgba(44, 83, 28, 0.1);
   color: #164214;
+}
+
+nav a:hover i {
+  color: #164214;
+  transform: scale(1.15);
 }
 
 .menu, .cart-list, .checkout, .order-history {
