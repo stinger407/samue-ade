@@ -9,7 +9,7 @@
   <meta property="og:image" content="{{ item.image_url }}" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="/static/style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papH6f0hKxY2Yb9H9Vf0sVn1KQZk1+Y1q8+F6Z1Yx1q0eVQ1Y5h2g2Q2V3s1k3K5" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
   <div class="page">
@@ -24,12 +24,14 @@
         </div>
       </div>
       <nav>
-        <a href="/">Home</a>
-        <a href="/cart">Cart ({{ cart_count|default(0) }})</a>
+        <a href="/"><i class="fas fa-store"></i> Menu</a>
+        <a href="/cart"><i class="fas fa-shopping-cart"></i> Cart ({{ cart_count|default(0) }})</a>
+        <a href="/order-history"><i class="fas fa-history"></i> Orders</a>
         {% if session.get('user') %}
-          <a href="/logout">Sign Out</a>
+          <a href="/account"><i class="fas fa-user"></i> Account</a>
+          <a href="/logout"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         {% else %}
-          <a href="/login">Sign In</a>
+          <a href="/login"><i class="fas fa-sign-in-alt"></i> Sign In</a>
         {% endif %}
       </nav>
     </header>

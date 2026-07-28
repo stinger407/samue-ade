@@ -64,9 +64,11 @@
         </div>
       </div>
       <nav>
+        <a href="/"><i class="fas fa-store"></i> Menu</a>
         <a href="/cart"><i class="fas fa-shopping-cart"></i> Cart ({{ cart_count }})</a>
-        <a href="/order-history">Orders</a>
+        <a href="/order-history"><i class="fas fa-history"></i> Orders</a>
         {% if session.get('user') %}
+          <a href="/account"><i class="fas fa-user"></i> Account</a>
           <a href="/logout"><i class="fas fa-sign-out-alt"></i> Sign Out</a>
         {% else %}
           <a href="/login"><i class="fas fa-sign-in-alt"></i> Sign In</a>
