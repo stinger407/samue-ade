@@ -41,15 +41,15 @@ def send_confirmation_email(receiver_email, verification_link, token):
     message.attach(MIMEText(html_content, "html"))
     
     try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                print(sender_email)
-                print(len(app_password))
-                server.login(sender_email, app_password)
-                print("sending to:", receiver_email)
-                server.sendmail(sender_email, receiver_email, message.as_string())
-                print("The confirmation email has been sent successfully!")
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
+            print(sender_email)
+            print(len(app_password))
+            server.login(sender_email, app_password)
+            print("sending to:", receiver_email)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+            print("The confirmation email has been sent successfully!")
     except Exception as e:
-            print("Failed to send email:", e)
+        print("Failed to send email:", e)
         
         
 

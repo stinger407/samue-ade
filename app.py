@@ -257,7 +257,14 @@ def add_to_cart():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if session.get('user'):
-        return redirect(url_for('account'))
+        db = get_db()
+        user_email = session.get('user', {}).get('email')
+        existing_user = db.execute("SELECT * FROM users WHERE email = ?", (user_email,)).fetchone() if user_email else None
+        if existing_user:
+            return redirect(url_for('account'))
+        else:
+            session.pop('user', None)
+            session.pop('logged_in', None)
 
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
@@ -281,39 +288,48 @@ def login():
 
         db = get_db()
         # Find or create user in SQLite database
-        user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-        if not user:
-            db.execute("INSERT INTO users (name, email, phone, address) VALUES (?, ?, ?, ?)", (name, email, phone or None, address or None))
-            db.commit()
+        try:
             user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
-        else:
-            # Update phone/address if provided and not already set
-            if phone and not user['phone']:
-                db.execute("UPDATE users SET phone = ? WHERE id = ?", (phone, user['id']))
-            if address and not user['address']:
-                db.execute("UPDATE users SET address = ? WHERE id = ?", (address, user['id']))
-            db.commit()
-            user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+            if not user:
+                db.execute("INSERT INTO users (name, email, phone, address) VALUES (?, ?, ?, ?)", (name, email, phone or None, address or None))
+                db.commit()
+                user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+            else:
+                user_keys = user.keys() if hasattr(user, 'keys') else []
+                if phone and ('phone' in user_keys) and not user['phone']:
+                    db.execute("UPDATE users SET phone = ? WHERE id = ?", (phone, user['id']))
+                if address and ('address' in user_keys) and not user['address']:
+                    db.execute("UPDATE users SET address = ? WHERE id = ?", (address, user['id']))
+                db.commit()
+                user = db.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
 
-        # Generate verification token
-        token = secrets.token_urlsafe(32)
-        db.execute("UPDATE users SET token = ? WHERE id = ?", (token, user['id']))
-        db.commit()
+            token = secrets.token_urlsafe(32)
+            db.execute("UPDATE users SET token = ? WHERE id = ?", (token, user['id']))
+            db.commit()
+        except Exception as e:
+            app.logger.error(f"Database error during login: {e}")
+            flash('Database error. Please try again.')
+            return redirect(url_for('login'))
 
         # Build dynamic verification link
         verification_link = request.url_root.rstrip('/') + url_for('verify', token=token)
 
-        # Send verification/confirmation code via email
-        send_confirmation_email(email, verification_link, token)
+        # Send verification/confirmation code via email safely
+        try:
+            send_confirmation_email(email, verification_link, token)
+        except Exception as e:
+            app.logger.error(f"Email sending error: {e}")
 
-        # Log in immediately (so modal won't show and user takes directly to account page)
+        user_keys = user.keys() if hasattr(user, 'keys') else []
         session['logged_in'] = True
         session['user'] = {
-            'name': user['name'], 'email': user['email'],
-            'phone': user['phone'], 'address': user['address']
+            'name': user['name'],
+            'email': user['email'],
+            'phone': user['phone'] if 'phone' in user_keys else None,
+            'address': user['address'] if 'address' in user_keys else None
         }
 
-        flash('Your account has been created and you are now signed in. A confirmation link has been sent to your Gmail.')
+        flash('Your account has been created and you are now signed in.')
         return redirect(url_for('account'))
 
     return render_template('login.html')
@@ -643,6 +659,8 @@ def account():
     # Load full user from DB to get phone, address, verified status
     user = db.execute("SELECT * FROM users WHERE email = ?", (session_user['email'],)).fetchone()
     if not user:
+        session.pop('user', None)
+        session.pop('logged_in', None)
         flash('User record not found. Please sign in again.')
         return redirect(url_for('login'))
     orders = db.execute(
