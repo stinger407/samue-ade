@@ -45,6 +45,9 @@
         <div>
           <h2 style="margin:0 0 4px;">Order Tracking</h2>
           <p style="margin:0;color:#657a66;font-size:0.95rem;">Tracking ID: <strong style="color:#1f4e1d;letter-spacing:0.05em;">{{ order['tracking_id'] }}</strong></p>
+          {% if order['is_discreet'] %}
+            <span class="status-badge" style="background:linear-gradient(135deg,#1f4e1d,#3b6e29);color:#fff;font-size:0.78rem;margin-top:6px;display:inline-block;"><i class="fas fa-user-shield"></i> VIP Private / Confidential Delivery</span>
+          {% endif %}
         </div>
       </div>
 

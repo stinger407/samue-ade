@@ -111,7 +111,12 @@
             <tbody>
               {% for order in orders[:5] %}
                 <tr>
-                  <td><code style="font-size:0.85rem;background:rgba(47,80,25,0.08);padding:3px 8px;border-radius:6px;">{{ order['tracking_id'] or 'N/A' }}</code></td>
+                  <td>
+                    <code style="font-size:0.85rem;background:rgba(47,80,25,0.08);padding:3px 8px;border-radius:6px;">{{ order['tracking_id'] or 'N/A' }}</code>
+                    {% if order['is_discreet'] %}
+                      <span class="status-badge" style="background:linear-gradient(135deg,#1f4e1d,#3b6e29);color:#fff;font-size:0.72rem;margin-top:4px;display:inline-block;"><i class="fas fa-user-shield"></i> VIP Private</span>
+                    {% endif %}
+                  </td>
                   <td>{{ order['items'] }}</td>
                   <td>₦{{ '%.2f' | format(order['total']) }}</td>
                   <td>

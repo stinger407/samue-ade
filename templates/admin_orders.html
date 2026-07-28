@@ -66,7 +66,15 @@
                 <td>{{ order.id }}</td>
                 <td>{{ order.items }}</td>
                 <td>₦{{ '%.2f' | format(order.total) }}</td>
-                <td>{{ order.customer_name }}<br>{{ order.customer_email }}</td>
+                <td>
+                  {{ order.customer_name }}<br>{{ order.customer_email }}
+                  {% if order['is_discreet'] %}
+                    <br><span class="status-badge" style="background:linear-gradient(135deg,#1f4e1d,#3b6e29);color:#fff;font-size:0.72rem;margin-top:3px;display:inline-block;"><i class="fas fa-user-shield"></i> VIP Private</span>
+                  {% endif %}
+                  {% if order['delivery_instructions'] %}
+                    <br><small style="color:#2f5019;font-weight:600;"><i class="fas fa-info-circle"></i> {{ order['delivery_instructions'] }}</small>
+                  {% endif %}
+                </td>
                 <td>{{ order.payment_method }}</td>
                 <td>{{ order.created_at }}</td>
                 <td>

@@ -66,8 +66,37 @@
           <select id="payment_method" name="payment_method">
             <option>Credit / Debit Card</option>
             <option>Cash on Delivery</option>
-            <option>Mobile Payment</option>
+            <option>Mobile Payment / Bank Transfer</option>
           </select>
+        </div>
+
+        <!-- VIP Private / Discreet Delivery Feature -->
+        <div style="background:linear-gradient(135deg,rgba(47,80,25,0.06),rgba(90,138,48,0.12));border:1px solid rgba(47,80,25,0.2);border-radius:18px;padding:18px;margin:20px 0;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:#2f5019;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">
+              <i class="fas fa-user-shield"></i>
+            </div>
+            <div>
+              <h4 style="margin:0;color:#1d421a;font-size:1rem;">VIP Private / Discreet Delivery</h4>
+              <p style="margin:2px 0 0;font-size:0.85rem;color:#436140;">For high-profile buyers who prefer privacy &amp; anonymous package handling.</p>
+            </div>
+          </div>
+
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;color:#1f4e1d;margin-bottom:12px;">
+            <input type="checkbox" id="is_discreet" name="is_discreet" value="1" onchange="document.getElementById('vipFields').style.display = this.checked ? 'block' : 'none';" style="width:18px;height:18px;accent-color:#2f5019;" />
+            <span>Enable VIP Confidential Package &amp; Proxy Delivery</span>
+          </label>
+
+          <div id="vipFields" style="display:none;margin-top:14px;border-top:1px dashed rgba(47,80,25,0.2);padding-top:14px;">
+            <div class="form-group" style="margin-bottom:12px;">
+              <label for="alias_name"><i class="fas fa-user-secret"></i> Proxy / Alias Name on Package Waybill</label>
+              <input id="alias_name" type="text" name="alias_name" placeholder="e.g. Representative Mark / VIP-101" />
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="delivery_instructions"><i class="fas fa-user-shield"></i> Private Delivery Instructions</label>
+              <input id="delivery_instructions" type="text" name="delivery_instructions" placeholder="e.g. Leave with Estate Gate / Driver call upon arrival" />
+            </div>
+          </div>
         </div>
 
         <button type="submit"><i class="fas fa-check-circle"></i> Place Order</button>

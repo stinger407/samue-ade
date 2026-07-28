@@ -82,7 +82,7 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS menu (id INTEGER PRIMARY KEY, name TEXT, price REAL, description TEXT, category TEXT, image_url TEXT)"
         )
         cursor.execute(
-            "CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, items TEXT, total REAL, customer_name TEXT, customer_email TEXT, payment_method TEXT, created_at TEXT, tracking_id TEXT, delivery_address TEXT, status TEXT DEFAULT 'Confirmed', status_updated_at TEXT)"
+            "CREATE TABLE IF NOT EXISTS orders (id INTEGER PRIMARY KEY AUTOINCREMENT, items TEXT, total REAL, customer_name TEXT, customer_email TEXT, payment_method TEXT, created_at TEXT, tracking_id TEXT, delivery_address TEXT, status TEXT DEFAULT 'Confirmed', status_updated_at TEXT, is_discreet INTEGER DEFAULT 0, delivery_instructions TEXT)"
         )
         cursor.execute(
             "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE, token TEXT, verified INTEGER DEFAULT 0, phone TEXT, address TEXT)"
@@ -122,6 +122,10 @@ def init_db():
                 cursor.execute("ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'Confirmed'")
             if "status_updated_at" not in existing_columns:
                 cursor.execute("ALTER TABLE orders ADD COLUMN status_updated_at TEXT")
+            if "is_discreet" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN is_discreet INTEGER DEFAULT 0")
+            if "delivery_instructions" not in existing_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN delivery_instructions TEXT")
             cursor.execute("PRAGMA table_info(menu)")
             menu_columns = [row[1] for row in cursor.fetchall()]
             if "category" not in menu_columns:
@@ -619,12 +623,20 @@ def place_order():
     email = request.form.get("email", "").strip()
     payment_method = request.form.get("payment_method", "Card")
     delivery_address = request.form.get("delivery_address", "").strip()
+    is_discreet = 1 if request.form.get("is_discreet") else 0
+    alias_name = request.form.get("alias_name", "").strip()
+    delivery_instructions = request.form.get("delivery_instructions", "").strip()
 
     if session_user:
         name = session_user.get("name", name)
         email = session_user.get("email", email)
 
-    if not name or not email:
+    if is_discreet and alias_name:
+        display_name = f"{alias_name} (VIP Private)"
+    else:
+        display_name = name
+
+    if not display_name or not email:
         flash("Please enter your name and email to complete the order.")
         return redirect(url_for("checkout"))
 
@@ -637,8 +649,8 @@ def place_order():
 
     db = get_db()
     db.execute(
-        "INSERT INTO orders (items, total, customer_name, customer_email, payment_method, created_at, tracking_id, delivery_address, status, status_updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (", ".join(order_lines), total, name, email, payment_method, created_at, tracking_id, delivery_address or None, 'Confirmed', created_at),
+        "INSERT INTO orders (items, total, customer_name, customer_email, payment_method, created_at, tracking_id, delivery_address, status, status_updated_at, is_discreet, delivery_instructions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (", ".join(order_lines), total, display_name, email, payment_method, created_at, tracking_id, delivery_address or None, 'Confirmed', created_at, is_discreet, delivery_instructions or None),
     )
     db.commit()
 
